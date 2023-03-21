@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"minyr/conv"
+	"minnyr/conv"
 	"os"
 	"strconv"
 	"strings"

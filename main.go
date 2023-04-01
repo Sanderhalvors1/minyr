@@ -46,7 +46,7 @@ func main() {
 			}
 
 		case "average":
-			fmt.Print("Vil du ha gjennomsnittstemperaturen i Celsius eller Fahrenheit? Skriv 'c' for Celsius eller 'f' for Fahrenheit: ")
+			fmt.Print("Vil de ha gjennomsnittstemperaturen i Celsius eller Fahrenheit? Skriv 'c' for Celsius eller 'f' for Fahrenheit: ")
 			scanner.Scan()
 			unit := strings.ToLower(scanner.Text())
 

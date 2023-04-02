@@ -19,20 +19,7 @@ func main() {
 
 		switch input {
 		case "convert":
-			if fileName == "" {
-				fmt.Print("Skriv inn filnavn for å lagre konverterte temperaturer: ")
-				scanner.Scan()
-				fileName = scanner.Text() + ".csv"
-			} else {
-				fmt.Print("Vil du lage en ny fil? Skriv 'ja' eller 'nei': ")
-				scanner.Scan()
-				answer := strings.ToLower(scanner.Text())
-				if answer == "ja" {
-					fmt.Print("Skriv inn filnavn for å lagre konverterte temperaturer: ")
-					scanner.Scan()
-					fileName = scanner.Text() + ".csv"
-				}
-			}
+			fileName = "kjeviktilfahr.csv"
 			convertedTemperatures, err := yr.KonverterGrader()
 			if err != nil {
 				fmt.Println("Kunne ikke konvertere grader:", err)

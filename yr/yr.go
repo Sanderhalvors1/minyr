@@ -21,7 +21,7 @@ func averageTemperatures() {
 	// Kode for gjennomsnittstemperatur her
 	fmt.Println("Average temperature calculated successfully!")
 }
-func openFil(filename string) (*os.File, error) { // funksjon for å åpne fil
+func OpenFil(filename string) (*os.File, error) { // funksjon for å åpne fil
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func openFil(filename string) (*os.File, error) { // funksjon for å åpne fil
 	return file, nil
 }
 
-func lesLinjer(file *os.File) ([]string, error) { // funksjon for å lese fil
+func LesLinjer(file *os.File) ([]string, error) { // funksjon for å lese fil
 	var lines []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -45,7 +45,7 @@ func lesLinjer(file *os.File) ([]string, error) { // funksjon for å lese fil
 	return lines, nil
 }
 
-func lukkFil(file *os.File) { //funksjon for å lukke fila.
+func LukkFil(file *os.File) { //funksjon for å lukke fila.
 	err := file.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +57,7 @@ func SkrivLinjer(lines []string, filename string) error { //funksjon for å skri
 	if err != nil {
 		return err
 	}
-	defer lukkFil(file)
+	defer LukkFil(file)
 
 	writer := bufio.NewWriter(file)
 	defer writer.Flush()
@@ -77,13 +77,13 @@ func CelsiusToFahrenheit(celsius float64) float64 { //funksjon for konvertere gr
 }
 
 func KonverterGrader() ([]string, error) {
-	file, err := openFil("kjevik-temp-celsius-20220318-20230318.csv")
+	file, err := OpenFil("kjevik-temp-celsius-20220318-20230318.csv")
 	if err != nil {
 		return nil, err
 	}
-	defer lukkFil(file)
+	defer LukkFil(file)
 
-	lines, err := lesLinjer(file)
+	lines, err := LesLinjer(file)
 	if err != nil {
 		return nil, err
 	}
@@ -118,14 +118,14 @@ func KonverterGrader() ([]string, error) {
 func GjsnittTemp() (float64, error) {
 	// funksjon for å regne gj.snitts temp.
 	// åpner kjevik fila
-	file, err := openFil("kjevik-temp-celsius-20220318-20230318.csv")
+	file, err := OpenFil("kjevik-temp-celsius-20220318-20230318.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer lukkFil(file)
+	defer LukkFil(file)
 
 	// leser linjene
-	lines, err := lesLinjer(file)
+	lines, err := LesLinjer(file)
 	if err != nil {
 		return 0, fmt.Errorf("could not read lines from file: %w", err)
 	}
@@ -157,14 +157,14 @@ func GjsnittTemp() (float64, error) {
 }
 func GjsnittTempFahrenheit() (float64, error) {
 	// Åpner kjevik fila
-	file, err := openFil("kjevik-temp-celsius-20220318-20230318.csv")
+	file, err := OpenFil("kjevik-temp-celsius-20220318-20230318.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer lukkFil(file)
+	defer LukkFil(file)
 
 	// Leser linjene
-	lines, err := lesLinjer(file)
+	lines, err := LesLinjer(file)
 	if err != nil {
 		return 0, fmt.Errorf("could not read lines from file: %w", err)
 	}

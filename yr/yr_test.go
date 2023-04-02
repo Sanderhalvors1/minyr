@@ -1,26 +1,101 @@
-package yr
+package yr_test
 
 import (
+	"bufio"
+	"minyr/yr"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
 )
 
-func TestCheckCSVLineCount(t *testing.T) {
-	// Åpner CSV-filen for testing
-	file, err := os.Open("kjevik-temp-celsius-20220318-20230318.csv")
-	if err != nil {
-		t.Fatal(err)
+func TestTellLinjer(t *testing.T) {
+	type test struct {
+		filename string
+		want     int
 	}
-	defer file.Close()
-
-	// Leser innholdet i CSV-filen
-	lines, err := lesLinjer(file)
-	if err != nil {
-		t.Fatal(err)
+	tests := []test{
+		{filename: "kjevik-temp-celsius-20220318-20230318.csv", want: 16756}, //funket
 	}
 
-	// Sjekker om antall linjer er lik 16756
-	if len(lines) != 16755 {
-		t.Errorf("Forventet 16756 linjer, fikk %d", len(lines))
+	for _, tc := range tests {
+		file, err := os.Open("kjevik-temp-celsius-20220318-20230318.csv")
+		if err != nil {
+			t.Errorf("could not open file %s: %v", tc.filename, err)
+			continue
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		lineCount := 0
+		for scanner.Scan() {
+			lineCount++
+		}
+
+		if lineCount != tc.want {
+			t.Errorf("unexpected number of lines in file %s. got %d, want %d", tc.filename, lineCount, tc.want)
+		}
+	}
+}
+
+func TestCelsiusToFahrenheit(t *testing.T) { //funket
+	testCases := []struct {
+		input string
+		want  string
+	}{
+		{input: "Kjevik;SN39040;18.03.2022 01:50;6", want: "Kjevik;SN39040;18.03.2022 01:50;42.8°F"},
+		{input: "Kjevik;SN39040;18.03.2022 01:50;0", want: "Kjevik;SN39040;18.03.2022 01:50;32.0°F"},
+		{input: "Kjevik;SN39040;18.03.2022 01:50;-11", want: "Kjevik;SN39040;18.03.2022 01:50;12.2°F"},
+	}
+
+	for _, tc := range testCases {
+		fields := strings.Split(tc.input, ";")
+		temp, err := strconv.ParseFloat(fields[3], 64)
+		if err != nil {
+			t.Errorf("Failed to convert temperature value to float64: %v", err)
+		}
+		fahrenheit := yr.CelsiusToFahrenheit(temp)
+		wantFields := strings.Split(tc.want, ";")
+		wantTemp, err := strconv.ParseFloat(strings.TrimRight(wantFields[3], "°F"), 64)
+		if err != nil {
+			t.Errorf("Failed to convert wanted temperature value to float64: %v", err)
+		}
+		if fahrenheit != wantTemp {
+			t.Errorf("CelsiusToFahrenheit(%v) = %v; want %v", temp, fahrenheit, wantTemp)
+		}
+	}
+}
+
+func TestKonverterGraderDataGyldig(t *testing.T) {
+	want := "Data er gyldig per 18.03.2023 (CC BY 4.0), Meteorologisk institutt (MET); endringen er gjort av Sander Halvorsen"
+	_, err := yr.KonverterGrader()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	file, err := yr.OpenFil("kjeviktilfahr.csv")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer yr.LukkFil(file)
+
+	scanner := bufio.NewScanner(file)
+	if !scanner.Scan() {
+		t.Fatalf("unexpected error: %v", scanner.Err())
+	}
+	line := scanner.Text()
+	if !strings.Contains(line, want) {
+		t.Errorf("test failed: want %q, got %q", want, line)
+	}
+}
+
+func GjsnittTemp(t *testing.T) { //funket
+	want := 8.56
+	got, err := yr.GjsnittTemp()
+	if err != nil {
+		t.Fatalf("CelsiusGjennomsnitt() feilet med %v", err)
+	}
+	if got != want {
+		t.Errorf("CelsiusGjennomsnitt() = %v; want %v", got, want)
 	}
 }

@@ -3,68 +3,64 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"minyr/yr"
 	"os"
 	"strings"
 )
 
-func main() {
+func main() { // main funksjon som kjører og gir valg om: convert, average eller exit.
 	scanner := bufio.NewScanner(os.Stdin)
-	var fileName string // variabel for å lagre filnavnet
-
 	for {
-		fmt.Print("Skriv 'convert' for å konvertere grader, 'average' for å beregne gjennomsnittstemperatur eller 'exit' for å avslutte programmet: ")
+		fmt.Print("Velg convert, average, eller exit: ")
 		scanner.Scan()
-		input := strings.ToLower(scanner.Text())
+		text := strings.TrimSpace(scanner.Text()) //bruker får valg
 
-		switch input {
-		case "convert":
-			fileName = "kjeviktilfahr.csv"
-			convertedTemperatures, err := yr.KonverterGrader()
-			if err != nil {
-				fmt.Println("Kunne ikke konvertere grader:", err)
-				continue
-			}
-			err = yr.SkrivLinjer(convertedTemperatures, fileName)
-			if err != nil {
-				fmt.Println("Kunne ikke skrive til fil:", err)
-			} else {
-				fmt.Println("Konvertering fullført!")
-			}
-
-		case "average":
-			fmt.Print("Vil de ha gjennomsnittstemperaturen i Celsius eller Fahrenheit? Skriv 'c' for Celsius eller 'f' for Fahrenheit: ")
-			scanner.Scan()
-			unit := strings.ToLower(scanner.Text())
-
-			var avgTemp float64
-			var err error
-			switch unit {
-			case "c":
-				avgTemp, err = yr.GjsnittTemp()
-			case "f":
-				avgTemp, err = yr.GjsnittTempFahrenheit()
-			default:
-				fmt.Println("Ugyldig enhet. Prøv igjen.")
-				continue
-			}
-
-			if err != nil {
-				fmt.Println("Kunne ikke beregne gjennomsnittstemperatur:", err)
-			} else {
-				if unit == "c" {
-					fmt.Printf("Gjennomsnittstemperatur for perioden: %.2f°C\n", avgTemp)
-				} else {
-					fmt.Printf("Gjennomsnittstemperatur for perioden: %.2f°F\n", avgTemp)
+		if text == "convert" { //convert valg, lager ny fil kalt KONV.csv
+			_, err := os.Stat("kjevik-temp-fahr-20220318-20230318.csv")
+			if err == nil {
+				fmt.Print("Filen eksisterer allerede. Vil du generere filen på nytt? (j/n): ") //filen eksisterer, skal det konverteres igjen?
+				scanner.Scan()
+				answer := strings.ToLower(scanner.Text())
+				if answer != "j" && answer != "n" {
+					log.Fatal("Ugyldig svar")
+				} else if answer == "n" {
+					return
 				}
 			}
 
-		case "exit":
-			fmt.Println("Avslutter programmet...")
-			return
+			convertedTemperatures, err := yr.KonverterGrader() //kjører KonverterGrader funksjon fra yr.go
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		default:
-			fmt.Println("Ugyldig input. Prøv igjen.")
+			err = yr.SkrivLinjer(convertedTemperatures, "kjevik-temp-fahr-20220318-20230318.csv") //skriver linjer i ny fil.
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println("Konvertering fullført!")
+
+		} else if text == "average" { //kjører GjsnittTemp funkjson
+			fmt.Print("Velg 'c' for celsius og 'f' for fahrenheit (c/f): ")
+			scanner.Scan()
+			tempType := strings.TrimSpace(scanner.Text())
+			if tempType == "c" {
+				_, err := yr.CelsiusGjennomsnitt()
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else if tempType == "f" {
+				_, err := yr.FahrenheitGjennomsnitt()
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				fmt.Println("Ugyldig kommando!")
+			}
+		} else if text == "exit" { //avslutter og går ut av programmet.
+			break
+		} else {
+			fmt.Println("Ugyldig kommando!")
 		}
 	}
 }
